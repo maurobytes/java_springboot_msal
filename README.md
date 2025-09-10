@@ -173,6 +173,6 @@ Grant the runtime identity (EC2/IAM role, ECS task role, or EKS service account)
 - For smoke tests, export the secrets as environment variables locally (or use `LocalSecretsService`) and run the app with `spring.profiles.active=local`.
 
 References
-- Microsoft identity platform: https://learn.microsoft.com/azure/active-directory/develop/
+- Microsoft identity platform: https://docs.azure.cn/en-us/entra/identity-platform/v2-overview
 - msal4j: https://github.com/AzureAD/microsoft-authentication-library-for-java
 - Power BI REST API: https://learn.microsoft.com/rest/api/power-bi/
