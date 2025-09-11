@@ -4,3 +4,17 @@ target/
 *.iml
 /.mvn/
 **/*.class
+
+# REST Client files with real credentials
+test-requests.http
+*-requests-local.http
+*-secrets.http
+
+# Environment files
+.env
+.env.local
+*.env
+
+# Azure secrets
+application-local.properties
+src/main/resources/application.properties

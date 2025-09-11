@@ -1,0 +1,112 @@
+### Spring Boot MSAL PoC - REST Client Tests Template
+### 
+### Prerequisites:
+### 1. Start the Spring Boot application: mvn spring-boot:run
+### 2. Replace placeholder values with your actual Azure configuration
+### 3. Choose authentication flow:
+###    - Device Code Flow: For user authentication with group membership (RECOMMENDED)
+###    - Client Credentials: For application-level access only
+
+### Variables - REPLACE WITH YOUR ACTUAL VALUES
+@baseUrl = http://localhost:8080
+@tenantId = YOUR_TENANT_ID_HERE
+@clientId = YOUR_BACKEND_CLIENT_ID_HERE
+@frontendClientId = YOUR_FRONTEND_CLIENT_ID_HERE
+@clientSecret = YOUR_BACKEND_CLIENT_SECRET_HERE
+@frontendClientSecret = YOUR_FRONTEND_CLIENT_SECRET_HERE
+@scope = api://YOUR_BACKEND_CLIENT_ID_HERE/access_as_user
+@scopeDefault = api://YOUR_BACKEND_CLIENT_ID_HERE/.default
+
+### ============================================
+### OPTION 1: Device Code Flow (USER Token) - RECOMMENDED
+### ============================================
+### Use this to test group membership functionality
+
+### STEP 1: Get Device Code
+# @name getDeviceCode
+POST https://login.microsoftonline.com/{{tenantId}}/oauth2/v2.0/devicecode
+Content-Type: application/x-www-form-urlencoded
+
+client_id={{frontendClientId}}
+&scope={{scope}} openid profile
+
+### STEP 2: Complete Authentication
+### After running the above request:
+### 1. Copy the "user_code" from the response
+### 2. Open the "verification_uri" in browser (usually https://microsoft.com/devicelogin)
+### 3. Enter the user_code and sign in with your account
+### 4. Then run the token request below:
+
+# @name getUserToken
+POST https://login.microsoftonline.com/{{tenantId}}/oauth2/v2.0/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id={{frontendClientId}}
+&client_secret={{frontendClientSecret}}
+&grant_type=urn:ietf:params:oauth:grant-type:device_code
+&device_code={{getDeviceCode.response.body.device_code}}
+
+### ============================================
+### OPTION 2: Client Credentials Flow (APPLICATION Token)
+### ============================================
+### Use this for application-level testing (no user context)
+
+# @name getAppToken
+POST https://login.microsoftonline.com/{{tenantId}}/oauth2/v2.0/token
+Content-Type: application/x-www-form-urlencoded
+
+client_id={{clientId}}
+&client_secret={{clientSecret}}
+&scope={{scopeDefault}}
+&grant_type=client_credentials
+
+### ============================================
+### TEST APIs WITH USER TOKEN (Device Code Flow)
+### ============================================
+### These tests require USER authentication for full functionality
+
+### Test 1: Simple Hello endpoint with user context
+GET {{baseUrl}}/api/hello/local?name=World
+Authorization: Bearer {{getUserToken.response.body.access_token}}
+
+### Test 2: Check group membership (requires user token!)
+GET {{baseUrl}}/api/hello/check-group
+Authorization: Bearer {{getUserToken.response.body.access_token}}
+
+### Test 3: Power BI reports (may require additional permissions)
+GET {{baseUrl}}/api/powerbi/reports
+Authorization: Bearer {{getUserToken.response.body.access_token}}
+
+### ============================================
+### TEST APIs WITH APPLICATION TOKEN (Client Credentials)
+### ============================================
+### These tests use application-level authentication
+
+### Test 1: Simple Hello endpoint (works but no user context)
+GET {{baseUrl}}/api/hello/local?name=World
+Authorization: Bearer {{getAppToken.response.body.access_token}}
+
+### Test 2: Group membership check (bypassed for application tokens)
+GET {{baseUrl}}/api/hello/check-group
+Authorization: Bearer {{getAppToken.response.body.access_token}}
+
+### Test 3: Power BI reports (likely to fail without user context)
+GET {{baseUrl}}/api/powerbi/reports
+Authorization: Bearer {{getAppToken.response.body.access_token}}
+
+### ============================================
+### MANUAL TOKEN TESTING
+### ============================================
+### If you want to use a token obtained elsewhere, replace YOUR_TOKEN_HERE
+
+### Manual Test 1: Simple Hello endpoint
+GET {{baseUrl}}/api/hello/local?name=World
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### Manual Test 2: Check group membership
+GET {{baseUrl}}/api/hello/check-group
+Authorization: Bearer YOUR_TOKEN_HERE
+
+### Manual Test 3: Power BI reports
+GET {{baseUrl}}/api/powerbi/reports
+Authorization: Bearer YOUR_TOKEN_HERE

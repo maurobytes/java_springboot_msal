@@ -1,0 +1,21 @@
+# Application configuration template
+server.port=8080
+
+# Azure / Entra ID settings - REPLACE WITH YOUR VALUES
+azure.client-id=YOUR_BACKEND_CLIENT_ID_HERE
+azure.client-secret=YOUR_BACKEND_CLIENT_SECRET_HERE
+azure.tenant-id=YOUR_TENANT_ID_HERE
+azure.required-group-id=YOUR_GROUP_ID_HERE
+
+# Configure Resource Server to use Azure issuer (supports both v1.0 and v2.0 tokens)
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri=https://login.microsoftonline.com/${azure.tenant-id}/discovery/v2.0/keys
+
+# AWS local mode to avoid calling real Secrets Manager by default
+aws.local=true
+
+# Logging
+logging.level.root=INFO
+
+# Additional logging for debugging (optional)
+# logging.level.org.springframework.security=DEBUG
+# logging.level.com.example.msalpoc=DEBUG

@@ -67,8 +67,21 @@ public class HelloController {
         SecretsService.AzureSecrets secrets = secretsService.getAzureSecrets();
         String expectedGroupAuthority = "GROUP_" + secrets.requiredGroupId;
         Set<String> authorities = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
+        
+        // Check if this is a client credentials token (app-only) by looking for specific claims
+        if (auth.getPrincipal() instanceof org.springframework.security.oauth2.jwt.Jwt) {
+            org.springframework.security.oauth2.jwt.Jwt jwt = (org.springframework.security.oauth2.jwt.Jwt) auth.getPrincipal();
+            String appIdAcr = jwt.getClaimAsString("appidacr");
+            
+            // If appidacr == "1", this is a client credentials token (app-only)
+            if ("1".equals(appIdAcr)) {
+                return ResponseEntity.ok("Application token accepted - bypassing group check. Hello " + auth.getName());
+            }
+        }
+        
+        // For user tokens, check group membership
         if (!authorities.contains(expectedGroupAuthority)) {
-            return ResponseEntity.status(403).body("User is not member of required group");
+            return ResponseEntity.status(403).body("User is not member of required group. Available authorities: " + authorities);
         }
         return ResponseEntity.ok("User is member of required group. Hello " + auth.getName());
     }
